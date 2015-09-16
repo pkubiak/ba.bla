@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 require 'nokogiri'
 require 'open-uri'
 
@@ -36,10 +37,12 @@ def split_in_rows(text, width)
       
       bold = !bold
     else
-      line.push char
-      length += 1
-      if length == width then
-        line.push " \033[0m"
+      if char != "\n" then
+        line.push char
+        length += 1
+      end
+      if length == width or char == "\n" then
+        line.push " "*(width-length) + " \033[0m"
         rows.push line.join
         line = []
         line.push "\033[0;45m "
@@ -71,11 +74,15 @@ end
 
 def print_results(results)
   results.css('div.result-wrapper').each do |result|
-    x = result.first_element_child
- 
-    left = Nokogiri::HTML(x.css('.result-left')[0].inner_html.gsub('<strong>','*').gsub('</strong>','*')).text.strip
-    right = Nokogiri::HTML(x.css('.result-right')[0].inner_html.gsub('<strong>','*').gsub('</strong>','*')).text.strip
-    print_in_columns(4, left, 50, 1, right, 50)
+    left = []
+    right = []
+    
+    x = result.css('div.row-fluid.result-row').each do |row|
+      left.push(Nokogiri::HTML(row.css('.result-left')[0].inner_html.gsub('<strong>','*').gsub('</strong>','*')).text.strip)
+      right.push(Nokogiri::HTML(row.css('.result-right')[0].inner_html.gsub('<strong>','*').gsub('</strong>','*')).text.strip)
+    end
+
+    print_in_columns(4, left.join("\n"), 50, 1, right.join("\n"), 50)
     puts
     #print_hr(4, 82)
   end 
