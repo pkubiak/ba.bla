@@ -101,7 +101,7 @@ query = ARGV[1..-1].join('-').gsub(' ','-')
 
 url = "http://pl.bab.la/dictionary/#{from}-#{to}/#{query}"
 
-doc = Nokogiri::HTML(open(url))
+doc = Nokogiri::HTML(open(URI.escape(url)))
 
 doc.css('section').each do |section|
   title = section.css('h2.section-block-head').first
